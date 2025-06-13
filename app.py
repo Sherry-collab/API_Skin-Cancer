@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # Correct way to load model using absolute path
-model = load_model(os.path.join(os.path.dirname(__file__), "Skin Cancer.h5"))
+model = load_model(os.path.join(os.path.dirname(__file__), "Skin Cancer.h5"), compile=False)
 
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes))

@@ -7,37 +7,40 @@ import os
 
 app = Flask(__name__)
 
-# Load model once at the start
-model = load_model("skin cancer.h5")
+# Correct way to load model using absolute path
+model = load_model(os.path.join(os.path.dirname(__file__), "skin_cancer.h5"))
 
-# Preprocess incoming image
 def preprocess_image(image_bytes):
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    img = Image.open(io.BytesIO(image_bytes))
     img = img.resize((28, 28))
     img_array = np.array(img) / 255.0
-    return img_array.reshape(1, 28, 28, 3)
+    img_array = img_array.reshape(1, 28, 28, 3)
+    return img_array
 
-# API endpoint
 @app.route("/predict", methods=["POST"])
 def predict():
-    if 'file' not in request.files or request.files['file'].filename == '':
-        return jsonify({"error": "No file uploaded"}), 400
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
 
     try:
-        file = request.files['file']
         img_array = preprocess_image(file.read())
         prediction = model.predict(img_array)
         class_index = int(np.argmax(prediction))
-        confidence = round(float(np.max(prediction)) * 100, 2)
+        confidence = float(np.max(prediction))
 
         return jsonify({
             "predicted_class": class_index,
-            "confidence": f"{confidence} %"
+            "confidence": confidence
         })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Entry point
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

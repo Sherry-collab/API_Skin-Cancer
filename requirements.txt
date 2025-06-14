@@ -13,7 +13,6 @@ h5py==3.7.0
 idna==3.3
 itsdangerous==2.1.2
 Jinja2==3.1.2
-keras==2.10.0
 libclang==14.0.6
 Markdown==3.3.7
 markdown-it-py==2.2.0
@@ -31,7 +30,6 @@ requests==2.28.1
 rich==12.6.0
 setuptools==65.5.0
 six==1.16.0
-tensorboard-data-server==0.6.1
 tensorflow==2.16.2
 termcolor==2.1.1
 typing_extensions>=4.6.0

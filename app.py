@@ -7,24 +7,24 @@ import os
 
 app = Flask(__name__)
 
-# Load model from .keras file
+# ✅ Load model from .keras file
 model_path = os.path.join(os.path.dirname(__file__), "skin_cancer_model.keras")
 model = load_model(model_path, compile=False)
 
+# ✅ Preprocess uploaded image
 def preprocess_image(image_bytes):
-    img = Image.open(io.BytesIO(image_bytes))
-    img = img.resize((28, 28))
+    img = Image.open(io.BytesIO(image_bytes)).resize((28, 28))
     img_array = np.array(img) / 255.0
     img_array = img_array.reshape(1, 28, 28, 3)
     return img_array
 
+# ✅ Predict route
 @app.route("/predict", methods=["POST"])
 def predict():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
     file = request.files['file']
-
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
@@ -42,6 +42,7 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ Run app
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

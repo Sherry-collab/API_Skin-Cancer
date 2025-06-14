@@ -34,7 +34,7 @@ setuptools==65.5.0
 six==1.16.0
 tensorboard==2.10.1
 tensorboard-data-server==0.6.1
-tensorflow==2.10.0
+tensorflow==2.16.2
 termcolor==2.1.1
 typing_extensions>=4.6.0
 urllib3==1.26.12

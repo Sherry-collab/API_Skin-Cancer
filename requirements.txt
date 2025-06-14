@@ -26,13 +26,11 @@ opt_einsum==3.3.0
 optree==0.16.0
 packaging==21.3
 pillow==9.3.0
-protobuf==3.19.6
 Pygments==2.13.0
 requests==2.28.1
 rich==12.6.0
 setuptools==65.5.0
 six==1.16.0
-tensorboard==2.10.1
 tensorboard-data-server==0.6.1
 tensorflow==2.16.2
 termcolor==2.1.1

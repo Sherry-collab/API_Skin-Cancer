@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # ✅ Load model from .keras file
-model_path = os.path.join(os.path.dirname(__file__), "skin_cancer.keras")
+model_path = os.path.join(os.path.dirname(__file__), "skin_cancer_model.h5")
 model = load_model(model_path, compile=False)
 
 # ✅ Preprocess uploaded image

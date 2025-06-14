@@ -7,8 +7,9 @@ import os
 
 app = Flask(__name__)
 
-# Correct way to load model using absolute path
-model = load_model(os.path.join(os.path.dirname(__file__), "clean_skin_cancer_model.h5"), compile=False)
+# Load model from .keras file
+model_path = os.path.join(os.path.dirname(__file__), "skin_cancer_model.keras")
+model = load_model(model_path, compile=False)
 
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes))

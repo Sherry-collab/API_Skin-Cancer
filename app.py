@@ -11,6 +11,17 @@ app = Flask(__name__)
 model_path = os.path.join(os.path.dirname(__file__), "skin_cancer_model.h5")
 model = load_model(model_path, compile=False)
 
+# ✅ Class labels mapping
+classes = {
+    4: ('nv', 'melanocytic nevi'),
+    6: ('mel', 'melanoma'),
+    2: ('bkl', 'benign keratosis-like lesions'),
+    1: ('bcc', 'basal cell carcinoma'),
+    5: ('vasc', 'pyogenic granulomas and hemorrhage'),
+    0: ('akiec', 'Actinic keratoses and intraepithelial carcinomae'),
+    3: ('df', 'dermatofibroma')
+}
+
 # ✅ Preprocess uploaded image
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).resize((28, 28))
@@ -34,8 +45,11 @@ def predict():
         class_index = int(np.argmax(prediction))
         confidence = float(np.max(prediction))
 
+        class_code, class_name = classes[class_index]
+
         return jsonify({
-            "predicted_class": class_index,
+            "predicted_class": class_name,
+            "class_code": class_code,
             "confidence": confidence
         })
 

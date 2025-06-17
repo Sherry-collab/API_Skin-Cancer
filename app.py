@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
@@ -10,7 +11,7 @@ app = Flask(__name__)
 # Load your trained skin cancer detection model
 model = load_model('skin_cancer_model.h5')
 
-# ✅ Update this list based on your actual class labels
+# Class labels (update if needed)
 CLASS_NAMES = [
     'Actinic Keratoses',
     'Basal Cell Carcinoma',
@@ -20,6 +21,10 @@ CLASS_NAMES = [
     'Melanoma',
     'Vascular Lesions'
 ]
+
+@app.route('/')
+def home():
+    return "API is running", 200
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -61,4 +66,5 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

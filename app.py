@@ -1,62 +1,64 @@
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
-from PIL import Image
+from tensorflow.keras.preprocessing import image
 import numpy as np
+from PIL import Image
 import io
-import os
 
 app = Flask(__name__)
 
-# ✅ Load model from .keras file
-model_path = os.path.join(os.path.dirname(__file__), "skin_cancer_model.h5")
-model = load_model(model_path, compile=False)
+# Load your trained skin cancer detection model
+model = load_model('skin_cancer_model.h5')
 
-# ✅ Class labels mapping
-classes = {
-    4: ('nv', 'melanocytic nevi'),
-    6: ('mel', 'melanoma'),
-    2: ('bkl', 'benign keratosis-like lesions'),
-    1: ('bcc', 'basal cell carcinoma'),
-    5: ('vasc', 'pyogenic granulomas and hemorrhage'),
-    0: ('akiec', 'Actinic keratoses and intraepithelial carcinomae'),
-    3: ('df', 'dermatofibroma')
-}
+# ✅ Update this list based on your actual class labels
+CLASS_NAMES = [
+    'Actinic Keratoses',
+    'Basal Cell Carcinoma',
+    'Benign Keratosis-like Lesions',
+    'Dermatofibroma',
+    'Melanocytic Nevi',
+    'Melanoma',
+    'Vascular Lesions'
+]
 
-# ✅ Preprocess uploaded image
-def preprocess_image(image_bytes):
-    img = Image.open(io.BytesIO(image_bytes)).resize((28, 28))
-    img_array = np.array(img) / 255.0
-    img_array = img_array.reshape(1, 28, 28, 3)
-    return img_array
-
-# ✅ Predict route
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
     if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({'error': 'No file uploaded'}), 400
 
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        return jsonify({'error': 'Empty filename'}), 400
 
     try:
-        img_array = preprocess_image(file.read())
-        prediction = model.predict(img_array)
-        class_index = int(np.argmax(prediction))
-        confidence = float(np.max(prediction))
+        # Load and preprocess the image
+        img = Image.open(io.BytesIO(file.read())).convert('RGB')
+        img = img.resize((28, 28))  # Match input size of your model
+        img_array = image.img_to_array(img)
+        img_array = img_array / 255.0  # Normalize
+        img_array = np.expand_dims(img_array, axis=0)  # Shape: (1, 28, 28, 3)
 
-        class_code, class_name = classes[class_index]
+        # Get prediction
+        predictions = model.predict(img_array)
+
+        if len(predictions) == 0 or len(predictions[0]) != len(CLASS_NAMES):
+            return jsonify({
+                'error': 'Mismatch between model output and CLASS_NAMES',
+                'prediction_shape': str(predictions[0].shape),
+                'class_names_count': len(CLASS_NAMES)
+            }), 500
+
+        predicted_index = int(np.argmax(predictions[0]))
+        predicted_class = CLASS_NAMES[predicted_index]
+        confidence = float(np.max(predictions[0]))
 
         return jsonify({
-            "predicted_class": class_name,
-            "class_code": class_code,
-            "confidence": confidence
+            'predicted_class': predicted_class,
+            'confidence': confidence
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
-# ✅ Run app
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(debug=True)
